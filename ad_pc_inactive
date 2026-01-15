@@ -1,0 +1,23 @@
+$DaysInactive = 90
+$time = (Get-Date).Adddays(-($DaysInactive))
+Get-ADComputer -Filter {LastLogonTimeStamp -lt $time} -ResultPageSize 2000 -resultSetSize $null -Properties Name, OperatingSystem, SamAccountName, DistinguishedName, LastLogonTimeStamp, PasswordLastSet, Created, ObjectGUID|  export-csv C:\Users\lisa.bowerman\Documents\pcInActive90_202402.csv
+$DaysInactive = -180
+$time = (Get-Date).Adddays(-($DaysInactive))
+Get-ADComputer -Filter {LastLogonTimeStamp -lt $time} -ResultPageSize 2000 -resultSetSize $null -Properties Name, OperatingSystem,OperatingSystemVersion, SamAccountName, DistinguishedName, LastLogonTimeStamp, PasswordLastSet, Created, ObjectGUID|  export-csv C:\Users\lisa.bowerman\Documents\pcLogOn6Mo.csv
+From <https://blog.netwrix.com/2017/07/20/how-to-find-inactive-computers-in-active-directory-using-powershell/> 
+
+
+
+$DaysInactive = -90
+$time = (Get-Date).Adddays(-($DaysInactive))
+Get-ADComputer -Filter {LastLogonTimeStamp -lt $time} -ResultPageSize 2000 -resultSetSize $null -Properties Name, OperatingSystem, SamAccountName, DistinguishedName, LastLogonTimeStamp, PasswordLastSet, Created, ObjectGUID|  export-csv C:\Users\lisa.bowerman\Documents\pcActive90_20240221.csv
+
+
+$a = Get-Date
+ $b = $a.AddDays(-90)
+get-adcomputer -filter {lastlogondate -le $b} -properties lastlogondate | 
+ select name,lastlogondate |
+ sort lastlogondate | 
+ export-csv -Path 'C:\Users\joe\Documents\old computers.csv' 
+
+From <https://www.reddit.com/r/PowerShell/comments/7010c1/getting_computers_with_last_logon_over_90_days/> 
