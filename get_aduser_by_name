@@ -1,0 +1,7 @@
+          get-aduser -filter 'name -like "Ashley Rodriguez"' -Properties *|export-csv  C:\Users\lisa.bowerman\Documents\ashleyRodriguez.csv                                                       
+
+
+//get list of all active users with emails and departments
+get-aduser -filter {enabled -eq "true"} -properties * | Select-Object name, displayname, userprincipalname, created, department, emailaddress | export-csv c:\ad_active_users.csv
+
+ get-aduser -filter 'name -like "russell walker"' -Properties * |get\rWalker.csv
