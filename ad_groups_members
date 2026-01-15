@@ -1,0 +1,26 @@
+#Get List of all Groups and members of those groups
+
+$Result = @()
+$AllGroups = Get-ADGroup -Filter * | Select "Name"
+$TotalGroups = $AllGroups.Count
+$i = 1 
+
+ForEach ($Group in $AllGroups) {
+Write-Progress -Activity "Processing $($Group.DisplayName)" -Status "$i out of $TotalGroups groups completed"
+#Get group members
+$GroupMembers = Get-ADGroupMember -Identity $AllGroups
+ForEach ($User in $GroupMembers) {
+$Result += New-Object PSObject -property $([ordered]@{ 
+GroupName = $Group.DisplayName
+GroupMail  = $Group.Mail
+UserName = $User.DisplayName
+UserPrincipalName  = $User.UserPrincipalName
+})
+}
+$i++
+}
+$Result | Export-CSV "C:\Temp\AllADGroupMembers.CSV" -NoTypeInformation
+
+
+
+****THIS SCRIPT TAKES A VERY LONG TIME TO RUN****
