@@ -1,0 +1,88 @@
+$Joined = [DateTime]::Today.AddDays(-30)
+Get-ADComputer -Filter 'WhenCreated -ge $joined' -Properties Name,whenCreated,distinguishedName | export-csv C:\Users\lisa.bowerman\Documents\pcAdded.csv
+
+
+Get-ADComputer -Filter * -Properties Name,whenCreated,distinguishedName,LastLogonDate,ObjectGUID  | export-csv C:\Users\lisa.bowerman\Documents\all_pc_AD.csv
+
+
+$Joined = [DateTime]::Today.AddDays(-1095)
+Get-ADComputer -Filter 'WhenCreated -ge $joined' -Properties Name,whenCreated,distinguishedName,LastLogonDate,ObjectGUID | export-csv C:\Users\lisa.bowerman\Documents\pcAddedLast3yrs.csv
+
+$Joined = [DateTime]::Today.AddDays(-365)
+Get-ADComputer -Filter 'WhenCreated -ge $joined' -Properties Name,whenCreated,distinguishedName,LastLogonDate | export-csv C:\Users\lisa.bowerman\Documents\pcAdded_365.csv
+
+$startDate = [DateTime]"2023-9-01"
+$endDate = [DateTime]"2023-9-30"
+Get-ADComputer -Filter 'Where-Object { ($_.__Updated).Date -ge $startDate -and ($_.__Updated).Date -lt $endDate}' -Properties * | export-csv C:\Users\lisa.bowerman\Documents\pcAdded202309.csv
+
+From <https://sitecore.stackexchange.com/questions/33805/powershell-script-to-get-the-list-of-items-created-modified-on-particular-day> 
+
+$Joined = [DateTime]::Today.AddDays(-90)
+Get-ADComputer -Filter 'WhenCreated -ge $joined' -Properties * | export-csv C:\Users\lisa.bowerman\Documents\pcAdded_last_90.csv
+
+Get-ADComputer -Filter * -Properties * | export-csv C:\Users\lisa.bowerman\Documents\ad_all_pc.csv
+
+
+From <https://sitecore.stackexchange.com/questions/33805/powershell-script-to-get-the-list-of-items-created-modified-on-particular-day> 
+
+
+
+$computers = get-adcomputer -filter * | select-object -expandproperty Name foreach ($computer in $computers) { $serial = Get-WMIObject -Class Win32_BIOS -ComputerName $computer | select-object -expandproperty SerialNumber write-output ("Computer {0} Serial Number: {1}" -f $computer,$serial) }
+--did not work
+
+From <https://www.experts-exchange.com/questions/29159480/Get-List-of-Serial-Numbers-of-all-Domain-Computers.html> 
+
+$computers=get-adcomputer-filter{Name -like "USCARITLW6DVXY"} | select-object -expandproperty Name foreach ($computer in $computers) { $serial = Get-WMIObject -Class Win32_BIOS -ComputerName $computer | select-object -expandproperty SerialNumber write-output ("Computer {0} Serial Number: {1}" -f $computer,$serial) }
+USCARITLW6DVXY
+
+
+Function Get-Lastused{
+<#
+  
+.EXAMPLE
+        PS C:\> Get-Lastused
+       
+                        
+.EXAMPLE
+        PS C:\> Get-Lastused -Computer server1,server2,server3
+       
+************************************************************************
+ Notes: Run as administrator
+ Author: Jiten https://community.spiceworks.com/people/jitensh
+Date Created: 1/21/2019
+     Credits: 
+Last Revised: 
+************************************************************************
+#>
+[cmdletbinding()]
+   param(
+   [String[]]$Computer = $env:COMPUTERNAME
+   )
+Foreach($Computer in $Computer){
+If(Test-Connection -ComputerName $computer -BufferSize 16 -Count 1 -ea 0 -quiet)
+{
+Try
+{
+$ErrorActionPreference ="stop"
+ Get-WmiObject -Class Win32_UserProfile -ComputerName $computer -Filter "Special = $false"|
+ select @{n='Computer';e={$computer}}, @{n='User';e={$_.localpath.split('\')[2]}},@{n='lastused';e={$_.ConvertToDateTime($_.LastUseTIme)}},@{n='LoggedInNow';e={(Get-WmiObject win32_ComputerSystem  -ComputerName $computer).username.split('\')[1]}}|Sort-Object lastused -Descending
+}
+Catch
+{
+        Write-Host "$computer `b" -NoNewline -BackgroundColor red
+        Write-Warning $error[0]
+}
+}
+Else
+{
+        Write-Host "$($computer) is offline" -ForegroundColor Red
+}
+}
+}
+$computers=get-adcomputer -filter {operatingsystem -like '*server*'}|select -exp Name 
+                           ForEach($computer in $computers)
+                           {
+                           Get-Lastused -computer $computer  
+                          } 
+
+From <https://community.spiceworks.com/topic/2205001-powershell-script-to-display-the-ad-users-last-logon-by-serial-number> 
