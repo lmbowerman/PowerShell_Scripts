@@ -1,0 +1,21 @@
+$DaysInactive = 90
+$time = (Get-Date).Adddays(-($DaysInactive))
+$Users = Get-ADUser -Filter { LastLogonDate -lt $time -and Enabled -eq $false } -Properties LastLogonDate | Select-Object @{ Name="Username"; Expression={$_.SamAccountName} }, Name, LastLogonDate, DistinguishedName| export-csv C:\Users\lisa.bowerman\Documents\disabledUsers202401.csv
+
+ Get-ADUser -Filter {Enabled -eq $false } -Properties *| export-csv C:\Users\lisa.bowerman\Documents\disabledUsersALL.csv
+
+
+$DaysInactive = 435
+$time = (Get-Date).Adddays(-($DaysInactive))
+$Users = Get-ADUser -Filter { LastLogonDate -lt $time -and Enabled -eq $false } -Properties *| export-csv C:\Users\lisa.bowerman\Documents\disabledUsersSince2023.csv
+
+Search-ADAccount -SearchBase "OU=myOU,DC=mydom,DC=adds" -AccountDisabled -UsersOnly | Get-ADUser -Properties whenChanged | Where whenChanged -gt (Get-Date).AddDays(-14)
+
+From <https://stackoverflow.com/questions/64751936/powershell-find-users-that-were-disabled-in-the-past-14-days-only> 
+
+
+$date= (get-date).AddDays(-435)
+ 
+Get-ADUser-Filter {LastLogonDate-lt $dateLastLogonDate -lt $time -and Enabled -eq $false } -Property * |export-csv C:\Users\lisa.bowerman\Documents\disabledUsersSince2023_02.csv
+
+<https://www.netwrix.com/how_to_find_inactive_users_in_ad_using_powershell.html> 
