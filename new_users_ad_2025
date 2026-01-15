@@ -1,0 +1,45 @@
+Import-Module ActiveDirectory
+
+# Define the start and end dates for 2025
+$startDate = Get-Date -Year 2025 -Month 1 -Day 1
+$endDate = Get-Date -Year 2026 -Month 1 -Day 1
+
+# Retrieve users created within the specified date range
+# The -Properties parameter is used to retrieve additional properties not included by default, such as 'whenCreated' and 'memberOf'
+$users = Get-ADUser -Filter {whenCreated -ge $startDate -and whenCreated -lt $endDate} -Properties SamAccountName, DisplayName, whenCreated, mail, memberOf, Enabled, LastLogonDate, Title, physicalDeliveryOfficeName, manager, department, accountExpires, employeeID, scriptPath,homeDirectory
+
+$results = @()
+
+foreach ($user in $users) {
+    # Get the simple names of the groups instead of the full distinguished names
+    $groupNames = ($user.memberOf | Get-ADGroup | Select-Object -ExpandProperty Name) -join ", "
+    
+    # Create a custom object with the desired properties
+    $props = [ordered]@{
+        DisplayName        = $user.DisplayName
+        SamAccountName     = $user.SamAccountName
+        EmailAddress       = $user.mail
+        JobTitle           = $user.Title
+        Enabled            = $user.Enabled
+        CreatedDate        = $user.whenCreated
+        LastLogonDate      = $user.LastLogonDate
+		Office			   = $user.physicalDeliveryOfficeName
+		Manager            = $user.manager
+        Department         = $user.department
+        AccountExpires     = $user.accountExpires
+		EmployeeID         = $user.employeeID
+        LoginScript        = $user.scriptPath
+		HomeFolder         = $user.homeDirectory
+        GroupMemberships   = $groupNames
+    }
+    
+    $results += New-Object -TypeName PSObject -Property $props
+}
+
+# Display results in the console (optional)
+$results | Format-Table
+
+# Export the results to a CSV file (recommended)
+$results | Export-Csv -Path "C:\Temp\UsersCreatedIn2025WithGroups.csv" -NoTypeInformation -Encoding UTF8
+
+Write-Host "Script complete. Results exported to C:\Temp\UsersCreatedIn2025WithGroups_edited.csv"
